@@ -12,6 +12,7 @@ const defaultChannels=["Cash","bKash","Nagad","Rocket","Upay","Bank"];
 const roleOptions=["pending","agent","member","manager","admin","super_admin"];
 const money=n=>new Intl.NumberFormat("en-BD",{maximumFractionDigits:2}).format(Number(n||0));
 const today=()=>new Date().toISOString().slice(0,10);
+const tabIcons={dashboard:"📊",transactions:"💸",ledger:"📒",closing:"🧾",people:"👥",reports:"📈",settings:"⚙️",audit:"🕵️",users:"🔑"};
 
 function App(){
  const [session,setSession]=useState(null),[loading,setLoading]=useState(true),[tab,setTab]=useState("dashboard"),[msg,setMsg]=useState("");
@@ -21,9 +22,12 @@ function App(){
  const [form,setForm]=useState({type:"collection",person_type:"agent",person_id:"",channel:"bKash",amount:"",note:"",transaction_date:today()});
  const [person,setPerson]=useState({name:"",phone:"",type:"agent"}),[closeDate,setCloseDate]=useState(today());
  const [opening,setOpening]=useState({date:today(),channel:"Cash",amount:"",note:""}),[editing,setEditing]=useState(null),[filter,setFilter]=useState({dateFrom:"",dateTo:"",person:"",channel:"",type:""});
+ const [theme,setTheme]=useState(()=>{if(typeof localStorage==="undefined")return "light";const saved=localStorage.getItem("isf_theme");if(saved)return saved;return (typeof window!=="undefined"&&window.matchMedia?.("(prefers-color-scheme: dark)").matches)?"dark":"light"});
 
  useEffect(()=>{if(!supabase){setLoading(false);return} supabase.auth.getSession().then(({data})=>{setSession(data.session);setLoading(false)});const {data:l}=supabase.auth.onAuthStateChange((_e,s)=>setSession(s));return()=>l.subscription.unsubscribe()},[]);
  useEffect(()=>{if(session)load()},[session]);
+ useEffect(()=>{document.documentElement.setAttribute("data-theme",theme);localStorage.setItem("isf_theme",theme);document.querySelector('meta[name="theme-color"]')?.setAttribute("content",theme==="dark"?"#05080f":"#0f172a")},[theme]);
+ function toggleTheme(){setTheme(t=>t==="dark"?"light":"dark")}
 
  // Daily-closing browser reminder. Client-side only: fires while this tab is
  // open on this device. Real SMS/email needs a backend + provider (see README).
@@ -107,7 +111,7 @@ function App(){
  if(!profile||profile.role==="pending")return <PendingScreen email={session.user.email} status={profile?"pending":"provisioning"} refresh={load} logout={logout}/>;
 
  const tabs=["dashboard","transactions","ledger","closing","people","reports","settings",...(canManage?["audit"]:[]),...(canAdmin?["users"]:[])];
- return <div className="app"><header className="topbar"><b>ISF Business Ledger <span>V4</span></b><div>{session.user.email}<button onClick={logout}>Logout</button></div></header><div className="layout"><aside>{tabs.map(x=><button className={tab===x?"active":""} onClick={()=>setTab(x)} key={x}>{x[0].toUpperCase()+x.slice(1)}</button>)}</aside><main>{msg&&<div className="notice">{msg}<button onClick={()=>setMsg("")}>×</button></div>}
+ return <div className="app"><header className="topbar"><b>ISF Business Ledger <span>V4</span></b><div className="user"><button className="theme-toggle" onClick={toggleTheme} aria-label="Toggle dark mode" title="Toggle dark mode">{theme==="dark"?"☀️":"🌙"}</button><span>{session.user.email}</span><button onClick={logout}>Logout</button></div></header><div className="layout"><aside>{tabs.map(x=><button className={tab===x?"active":""} onClick={()=>setTab(x)} key={x}><span className="icon">{tabIcons[x]||"•"}</span><span>{x[0].toUpperCase()+x.slice(1)}</span></button>)}</aside><main>{msg&&<div className="notice">{msg}<button onClick={()=>setMsg("")}>×</button></div>}
  {tab==="dashboard"&&<Dashboard totals={totals} dayStats={dayStats} date={closeDate} people={people} tx={tx} channelClosing={channelClosing}/>}
  {tab==="transactions"&&<Transactions form={form} setForm={setForm} submit={saveTx} members={members} agents={agents} editing={editing} cancel={()=>{setEditing(null);setForm({...form,person_id:"",amount:"",note:""})}} channelNames={channelNames}/>}
  {tab==="ledger"&&<Ledger agents={agents} members={members} ledger={personLedger} date={closeDate} setDate={setCloseDate}/>}

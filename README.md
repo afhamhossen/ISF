@@ -1,6 +1,23 @@
-# ISF Business Ledger V4
+# ISF Business Ledger V5
 
 Mobile-friendly React + Vite + Supabase ledger for distributor/member/agent daily settlement.
+
+## What's new in V5 (over V4)
+
+**Dark mode:**
+- A sun/moon toggle button next to the logout button switches between light and dark themes instantly.
+- On first visit (no saved preference), the app follows the device/browser's system-level light/dark setting automatically.
+- The choice is remembered in the browser (`localStorage`) so it persists across visits and devices' status-bar color on mobile updates to match.
+- Every screen — including the login and pending-approval screens, cards, tables, forms, and badges — has been converted to theme-aware colors instead of hardcoded ones, so there is no leftover white flash anywhere in the app.
+
+**Mobile UI improvements:**
+- Navigation moves to a fixed bottom tab bar (with icons) on phone-sized screens, matching common mobile-app navigation patterns, instead of a horizontally-scrolling strip at the top.
+- Content area gets extra bottom padding on mobile so the bottom nav never covers the last row of a table or the last field of a form.
+- Bottom nav respects the iPhone home-indicator safe area (`env(safe-area-inset-bottom)`).
+- Buttons and nav targets are sized closer to the 44px touch-target guideline for easier tapping.
+- The top bar's email/logout area, which previously wasn't using the intended CSS styling, now correctly collapses the email text on narrow screens so the Logout and theme buttons stay reachable.
+
+No database changes in this update — `supabase/schema.sql` and `supabase/migration_v3_to_v4.sql` from V4 still apply as-is; there is nothing new to run in Supabase for V5.
 
 ## What's new in V4 (over V3)
 
