@@ -10,3 +10,10 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
 
 .wa,.tg{border:0;border-radius:8px;padding:11px 16px;font-weight:700;cursor:pointer;color:white}.wa{background:#16a34a}.tg{background:#229ed9}
 .danger{color:#b42318;border-color:#f3b5b0}.wa{border-color:#25d366}.tg{border-color:#229ed9}.table-wrap button{margin:2px 3px}
+
+.badge{display:inline-block;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:700;margin-left:4px;vertical-align:middle}
+.badge.active{background:#dcfce7;color:#166534}
+.badge.inactive{background:#f1f5f9;color:#64748b}
+.badge.pending{background:#fef3c7;color:#92400e}
+.center-actions{display:flex;gap:8px;justify-content:center;margin-top:14px}
+.small-note{margin-top:-10px;margin-bottom:16px;font-size:12px}
