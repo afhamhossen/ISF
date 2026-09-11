@@ -20,14 +20,23 @@ Run the migrations **in order** in Supabase → SQL Editor:
 1. `supabase/migration_v3_to_v4.sql` — skip if you already ran this before.
 2. `supabase/migration_v4_to_v5.sql` — turns your current single-business data into "My Business" inside the new multi-business model. **Nothing is deleted**, and everyone's current role carries over unchanged, now scoped to "My Business". You can rename it and set its currency afterward from Settings.
 
+Both migration files end with `NOTIFY pgrst, 'reload schema';`, so the API refreshes immediately after each one — you shouldn't need to reload the cache manually.
+
 Then deploy the updated `src/main.jsx` / `src/styles.css` to Vercel.
 
 ## Starting a brand-new project
-1. Create a Supabase project, run `supabase/schema.sql` in the SQL Editor.
-2. Enable the Google provider under Supabase Authentication.
-3. Copy `.env.example` to `.env`, set `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`.
-4. `npm install && npm run dev`, then deploy to Vercel.
-5. On first login you'll be asked to create your first business — you become its Super Admin.
+1. Create a Supabase project, run `supabase/schema.sql` in the SQL Editor. (It now ends with `NOTIFY pgrst, 'reload schema';` so the API picks up the new tables immediately — no separate cache-reload step needed.)
+2. **Verify it worked** before moving on: Supabase → Table Editor → confirm `businesses`, `business_members`, `members`, `agents`, `transactions`, `channels` all appear under the `public` schema. If any are missing, re-run `schema.sql` and check the SQL Editor's output for errors — a table it depends on may have failed to create.
+3. Enable the Google provider under Supabase Authentication.
+4. Copy `.env.example` to `.env`, set `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` — **double-check these match the same project you just ran the SQL in** (easy to mix up if you have more than one Supabase project).
+5. `npm install && npm run dev`, then deploy to Vercel (set the same two env vars there too).
+6. On first login you'll be asked to create your first business — you become its Super Admin.
+
+### Troubleshooting: "Could not find the table 'public.X' in the schema cache"
+This means PostgREST (Supabase's API layer) doesn't see that table. The app now shows a clearer message for this automatically, but the underlying fixes are:
+- The SQL was never run on this project → run `schema.sql` (fresh project) or the migration files in order (upgrading an existing project), then check Table Editor as in step 2 above.
+- `.env` / Vercel env vars point at a different Supabase project than the one you ran the SQL in → fix the URL/key.
+- The SQL ran but PostgREST's cache hadn't refreshed yet → run `NOTIFY pgrst, 'reload schema';` in SQL Editor, or Settings → API → reload schema cache (all three SQL files now do this for you automatically at the end).
 
 ## Formula
 Net Result = Collection - Fund Given - Expense

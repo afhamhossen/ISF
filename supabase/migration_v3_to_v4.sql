@@ -90,3 +90,7 @@ create policy "permissions manage" on public.user_permissions for all to authent
 -- Done. Existing users keep working exactly as before. Any NEW Google
 -- sign-in from now on lands on a "pending approval" screen and cannot see
 -- or touch any data until you approve them from the app's Users tab.
+
+-- Refresh PostgREST's schema cache immediately (avoids a transient
+-- "Could not find the table ... in the schema cache" error right after this runs).
+NOTIFY pgrst, 'reload schema';

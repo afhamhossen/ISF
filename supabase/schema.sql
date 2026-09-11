@@ -142,3 +142,8 @@ exception when duplicate_object then null; end $$;
 -- Every user starts with zero businesses. The first thing they do after
 -- signing in is either create a business (they become its super_admin) or
 -- be added to an existing one by that business's admin (Users tab, by email).
+
+-- Force PostgREST to pick up the tables/policies above immediately instead of
+-- waiting for its own periodic schema-cache refresh (avoids a transient
+-- "Could not find the table ... in the schema cache" error right after setup).
+NOTIFY pgrst, 'reload schema';

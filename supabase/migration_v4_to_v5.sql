@@ -184,3 +184,7 @@ create policy "audit read" on public.audit_logs for select to authenticated usin
 -- Done. Log in and you'll land straight in "My Business" with everything
 -- exactly as it was. Use Settings to rename it or change its currency, and
 -- the new business switcher (top of the app) to create additional businesses.
+
+-- Refresh PostgREST's schema cache immediately (avoids a transient
+-- "Could not find the table ... in the schema cache" error right after this runs).
+NOTIFY pgrst, 'reload schema';
