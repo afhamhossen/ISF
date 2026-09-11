@@ -14,6 +14,22 @@ each tool's header lets you change it any time):
 Cash Book and Personal Expense are single-user: each row belongs only to the signed-in
 account (enforced by Supabase RLS), with no business/team concept at all.
 
+## Upgrading an existing (already-deployed) project to V7
+Run `supabase/migration_v6_to_v7.sql` in Supabase → SQL Editor (adds Cash Book's Khata
+tables only). If you're upgrading straight from V5, also run `migration_v5_to_v6.sql`
+first, in order.
+
+## Cash Book now includes a Customer & Supplier Ledger ("Khata")
+Inside Cash Book there are now two tabs:
+- **Cash Entries** — the original simple cash in/out log, plus PDF/Excel export and a
+  one-click JSON backup (same idea as Business Ledger's backup, just for Cash Book's
+  own data).
+- **Customer & Supplier Ledger (খাতা)** — add customers/suppliers, record "You'll Get"
+  (they owe you) or "You'll Give" (you owe them) entries, see each contact's running
+  balance, and send a WhatsApp reminder with the due amount pre-filled (opens `wa.me`
+  with the message ready — there's no SMS gateway wired up, see "Explicitly not
+  included" below for why).
+
 ## Upgrading an existing (already-deployed) project to V6
 Run `supabase/migration_v5_to_v6.sql` in Supabase → SQL Editor. It only adds the two new
 tables (`cashbook_entries`, `personal_expenses`) — nothing existing is touched. Then
@@ -82,6 +98,7 @@ Channel Closing = Opening + Collection - Fund Given - Expense
 - Approve new teammates promptly per business and review roles periodically in each business's Users tab.
 
 ## Explicitly not included
+- **Real SMS reminders.** Only a WhatsApp `wa.me` link with the message pre-filled is included (Khata's "WhatsApp Reminder" button, and the existing report-sharing buttons). True SMS needs a paid SMS gateway account (e.g. a local BD provider) plus a backend to call it — not available in this environment.
 - **Real SMS/email notifications.** The Settings reminders (daily closing and weekly backup) only fire a browser notification while the app tab is open on your device. Real push/SMS/email alerts need a backend (e.g. a Supabase Edge Function) plus a paid provider (Twilio, a local BD SMS gateway, Resend, etc.) — that requires your own account and API keys.
 - **True automatic cloud backup.** The Download Backup button is one click, not zero — it saves a JSON file to the device, and you still choose where to store it (Google Drive, email, etc.). A fully automatic backup to Google Drive/GitHub would need server-side credentials (a Google Cloud OAuth client or similar) that aren't available in this environment.
 
