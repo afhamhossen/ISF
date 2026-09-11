@@ -1,6 +1,23 @@
-# ISF Business Ledger V5
+# ISF Suite V6 (Business Ledger + Cash Book + Personal Expense)
 
-Mobile-friendly React + Vite + Supabase ledger for distributor/member/agent daily settlement.
+Mobile-friendly React + Vite + Supabase app. After Google login, you now pick one of three
+independent tools — your choice is remembered on this device (a "Switch App" button in
+each tool's header lets you change it any time):
+
+- **Business Ledger** — everything from V5, unchanged: multi-business, team roles,
+  agents/members, daily closing, audit log, reports.
+- **Cash Book** — a simple personal cash in / cash out log (date, type, category,
+  channel, amount, note), with running totals and edit/delete. No teams, no roles.
+- **Personal Expense** — a simple personal spending tracker (date, category, amount,
+  note), with a total and a by-category breakdown, and edit/delete.
+
+Cash Book and Personal Expense are single-user: each row belongs only to the signed-in
+account (enforced by Supabase RLS), with no business/team concept at all.
+
+## Upgrading an existing (already-deployed) project to V6
+Run `supabase/migration_v5_to_v6.sql` in Supabase → SQL Editor. It only adds the two new
+tables (`cashbook_entries`, `personal_expenses`) — nothing existing is touched. Then
+deploy the updated `src/main.jsx` / `src/styles.css`.
 
 ## What's new since the last V5 build
 - **Receipt photos are now cleaned up automatically before upload.** Sideways phone-camera photos are auto-rotated (EXIF orientation is read and corrected) and the image is resized/re-compressed to a small JPEG (max 1600px, quality 0.8) before it's sent to Supabase Storage. Faster uploads, much less storage used, no more sideways receipts.
