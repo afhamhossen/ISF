@@ -1,4 +1,36 @@
-# ISF Suite V6 (Business Ledger + Cash Book + Personal Expense)
+# ISF Suite V8 (Business Ledger + Cash Book + Personal Expense)
+
+## What's new in V8
+Six features added to **both Business Ledger and Cash Book** (Personal Expense is
+unchanged). Each tool has its own copy of the data — nothing is shared between them.
+
+- **Inventory.** Track items (name, SKU, unit, cost/sale price, low-stock threshold).
+  Post Stock In / Stock Out / Set Exact Quantity movements; the item's quantity updates
+  automatically. Items below their threshold show a "Low Stock" badge and appear in
+  Analytics.
+- **Invoices.** Build an invoice with a customer, dates, status (draft/sent/paid) and
+  line items — pull a line from Inventory (auto-fills description & price) or type one
+  freehand. Export any invoice as a PDF.
+- **Recurring Transactions/Entries.** Define a rule (amount, channel, frequency:
+  daily/weekly/monthly, next run date). Press **Process Due** to post every rule that's
+  due as a real transaction/entry and advance its next run date — this is manual, not a
+  background job (see "Explicitly not included").
+- **Budgets & Alerts.** Set a monthly limit — per channel in Business Ledger, per
+  category in Cash Book — and see actual spend vs. limit with a progress bar that turns
+  red when you're over.
+- **Analytics.** A 6-month spend chart and a breakdown chart (collection by channel in
+  Business Ledger, top expense categories in Cash Book), plus the low-stock list.
+- **Multi-currency display.** Enter manual exchange rates (business's/Cash Book's base
+  currency → another currency) and pick a display currency on the Analytics screen.
+  **This only changes how numbers are *shown*** — everything is still stored in the
+  original currency; no rates are fetched automatically.
+
+### Upgrading an existing (already-deployed) project to V8
+Run `supabase/migration_v7_to_v8.sql` in Supabase → SQL Editor. It only adds new tables
+(inventory, invoices, recurring, budgets, exchange rates — one set for Business Ledger,
+one for Cash Book) — nothing existing is touched. Then deploy the updated
+`src/main.jsx` / `src/styles.css`.
+
 
 Mobile-friendly React + Vite + Supabase app. After Google login, you now pick one of three
 independent tools — your choice is remembered on this device (a "Switch App" button in
@@ -98,6 +130,11 @@ Channel Closing = Opening + Collection - Fund Given - Expense
 - Approve new teammates promptly per business and review roles periodically in each business's Users tab.
 
 ## Explicitly not included
+- **Automatic recurring posting.** Recurring Transactions/Entries only post when someone
+  presses **Process Due** while the app is open — there's no server-side scheduler
+  (e.g. a Supabase Edge Function on a cron) running this in the background yet.
+- **Live exchange rates.** Multi-currency display uses rates you enter by hand; nothing
+  is fetched from a live FX API.
 - **Real SMS reminders.** Only a WhatsApp `wa.me` link with the message pre-filled is included (Khata's "WhatsApp Reminder" button, and the existing report-sharing buttons). True SMS needs a paid SMS gateway account (e.g. a local BD provider) plus a backend to call it — not available in this environment.
 - **Real SMS/email notifications.** The Settings reminders (daily closing and weekly backup) only fire a browser notification while the app tab is open on your device. Real push/SMS/email alerts need a backend (e.g. a Supabase Edge Function) plus a paid provider (Twilio, a local BD SMS gateway, Resend, etc.) — that requires your own account and API keys.
 - **True automatic cloud backup.** The Download Backup button is one click, not zero — it saves a JSON file to the device, and you still choose where to store it (Google Drive, email, etc.). A fully automatic backup to Google Drive/GitHub would need server-side credentials (a Google Cloud OAuth client or similar) that aren't available in this environment.
