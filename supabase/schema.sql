@@ -1,14 +1,33 @@
--- ISF Business Ledger V5 schema (fresh install)
+-- ১) পুরনো টেবিল/ফাংশন সব মুছে ফেলা (আপনার নিশ্চিতকরণ অনুযায়ী ডেটা গুরুত্বপূর্ণ না)
+drop table if exists public.audit_logs cascade;
+drop table if exists public.transactions cascade;
+drop table if exists public.daily_closings cascade;
+drop table if exists public.opening_balances cascade;
+drop table if exists public.user_permissions cascade;
+drop table if exists public.members cascade;
+drop table if exists public.agents cascade;
+drop table if exists public.business_members cascade;
+drop table if exists public.channels cascade;
+drop table if exists public.businesses cascade;
+drop table if exists public.profiles cascade;
+drop function if exists public.handle_new_user() cascade;
+drop function if exists public.handle_new_business() cascade;
+drop function if exists public.role_in_business(uuid) cascade;
+drop function if exists public.is_approved_in_business(uuid) cascade;
+drop function if exists public.find_user_id_by_email(text) cascade;
+drop function if exists public.current_role() cascade;
+
+-- ২) নতুন V5 স্কিমা (fresh install)
 create extension if not exists pgcrypto;
 
-create table if not exists public.profiles(
+create table public.profiles(
   id uuid primary key references auth.users(id) on delete cascade,
   full_name text,
   email text,
   created_at timestamptz not null default now()
 );
 
-create table if not exists public.businesses(
+create table public.businesses(
   id uuid primary key default gen_random_uuid(),
   name text not null,
   currency text not null default 'BDT',
@@ -16,7 +35,7 @@ create table if not exists public.businesses(
   created_at timestamptz not null default now()
 );
 
-create table if not exists public.business_members(
+create table public.business_members(
   id uuid primary key default gen_random_uuid(),
   business_id uuid not null references public.businesses(id) on delete cascade,
   user_id uuid not null references public.profiles(id) on delete cascade,
@@ -25,11 +44,11 @@ create table if not exists public.business_members(
   unique(business_id,user_id)
 );
 
-create table if not exists public.channels(id uuid primary key default gen_random_uuid(),business_id uuid not null references public.businesses(id) on delete cascade,name text not null,active boolean not null default true,sort_order int not null default 0,created_at timestamptz not null default now(),unique(business_id,name));
-create table if not exists public.members(id uuid primary key default gen_random_uuid(),business_id uuid not null references public.businesses(id) on delete cascade,name text not null,phone text,active boolean not null default true,created_at timestamptz not null default now());
-create table if not exists public.agents(id uuid primary key default gen_random_uuid(),business_id uuid not null references public.businesses(id) on delete cascade,name text not null,phone text,active boolean not null default true,created_at timestamptz not null default now());
+create table public.channels(id uuid primary key default gen_random_uuid(),business_id uuid not null references public.businesses(id) on delete cascade,name text not null,active boolean not null default true,sort_order int not null default 0,created_at timestamptz not null default now(),unique(business_id,name));
+create table public.members(id uuid primary key default gen_random_uuid(),business_id uuid not null references public.businesses(id) on delete cascade,name text not null,phone text,active boolean not null default true,created_at timestamptz not null default now());
+create table public.agents(id uuid primary key default gen_random_uuid(),business_id uuid not null references public.businesses(id) on delete cascade,name text not null,phone text,active boolean not null default true,created_at timestamptz not null default now());
 
-create table if not exists public.transactions(
+create table public.transactions(
   id uuid primary key default gen_random_uuid(),
   business_id uuid not null references public.businesses(id) on delete cascade,
   type text not null check(type in('collection','fund_given','expense')),
@@ -44,10 +63,10 @@ create table if not exists public.transactions(
   created_at timestamptz not null default now()
 );
 
-create table if not exists public.opening_balances(id uuid primary key default gen_random_uuid(),business_id uuid not null references public.businesses(id) on delete cascade,balance_date date not null default current_date,channel text not null,amount numeric(14,2) not null check(amount>=0),note text,created_by uuid references auth.users(id),created_at timestamptz not null default now());
-create table if not exists public.daily_closings(id uuid primary key default gen_random_uuid(),business_id uuid not null references public.businesses(id) on delete cascade,closing_date date not null,total_fund numeric(14,2) not null default 0,total_collection numeric(14,2) not null default 0,total_expense numeric(14,2) not null default 0,net_result numeric(14,2) not null default 0,closed_by uuid references auth.users(id),closed_at timestamptz not null default now(),unique(business_id,closing_date));
-create table if not exists public.user_permissions(id uuid primary key default gen_random_uuid(),user_id uuid not null references auth.users(id) on delete cascade,permission text not null,enabled boolean not null default false,unique(user_id,permission));
-create table if not exists public.audit_logs(id uuid primary key default gen_random_uuid(),business_id uuid references public.businesses(id) on delete cascade,user_id uuid references auth.users(id),user_email text,action text not null,table_name text not null,row_id uuid,details text,created_at timestamptz not null default now());
+create table public.opening_balances(id uuid primary key default gen_random_uuid(),business_id uuid not null references public.businesses(id) on delete cascade,balance_date date not null default current_date,channel text not null,amount numeric(14,2) not null check(amount>=0),note text,created_by uuid references auth.users(id),created_at timestamptz not null default now());
+create table public.daily_closings(id uuid primary key default gen_random_uuid(),business_id uuid not null references public.businesses(id) on delete cascade,closing_date date not null,total_fund numeric(14,2) not null default 0,total_collection numeric(14,2) not null default 0,total_expense numeric(14,2) not null default 0,net_result numeric(14,2) not null default 0,closed_by uuid references auth.users(id),closed_at timestamptz not null default now(),unique(business_id,closing_date));
+create table public.user_permissions(id uuid primary key default gen_random_uuid(),user_id uuid not null references auth.users(id) on delete cascade,permission text not null,enabled boolean not null default false,unique(user_id,permission));
+create table public.audit_logs(id uuid primary key default gen_random_uuid(),business_id uuid references public.businesses(id) on delete cascade,user_id uuid references auth.users(id),user_email text,action text not null,table_name text not null,row_id uuid,details text,created_at timestamptz not null default now());
 
 create or replace function public.role_in_business(biz uuid) returns text language sql stable security definer set search_path=public as $$ select role from public.business_members where business_id=biz and user_id=auth.uid() $$;
 create or replace function public.is_approved_in_business(biz uuid) returns boolean language sql stable security definer set search_path=public as $$ select coalesce((select role<>'pending' from public.business_members where business_id=biz and user_id=auth.uid()),false) $$;
@@ -65,42 +84,40 @@ alter table public.daily_closings enable row level security;
 alter table public.user_permissions enable row level security;
 alter table public.audit_logs enable row level security;
 
-do $$ begin
- create policy "profiles self or shared-business read" on public.profiles for select to authenticated using(id=auth.uid() or exists(select 1 from public.business_members bm1 join public.business_members bm2 on bm1.business_id=bm2.business_id where bm1.user_id=auth.uid() and bm2.user_id=profiles.id));
+create policy "profiles self or shared-business read" on public.profiles for select to authenticated using(id=auth.uid() or exists(select 1 from public.business_members bm1 join public.business_members bm2 on bm1.business_id=bm2.business_id where bm1.user_id=auth.uid() and bm2.user_id=profiles.id));
 
- create policy "businesses member read" on public.businesses for select to authenticated using(exists(select 1 from public.business_members where business_id=businesses.id and user_id=auth.uid()));
- create policy "businesses create" on public.businesses for insert to authenticated with check(created_by=auth.uid());
- create policy "businesses admin update" on public.businesses for update to authenticated using(public.role_in_business(id) in('super_admin','admin')) with check(public.role_in_business(id) in('super_admin','admin'));
+create policy "businesses member read" on public.businesses for select to authenticated using(exists(select 1 from public.business_members where business_id=businesses.id and user_id=auth.uid()));
+create policy "businesses create" on public.businesses for insert to authenticated with check(created_by=auth.uid());
+create policy "businesses admin update" on public.businesses for update to authenticated using(public.role_in_business(id) in('super_admin','admin')) with check(public.role_in_business(id) in('super_admin','admin'));
 
- create policy "business_members self or admin read" on public.business_members for select to authenticated using(user_id=auth.uid() or public.role_in_business(business_id) in('super_admin','admin'));
- create policy "business_members admin manage" on public.business_members for all to authenticated using(public.role_in_business(business_id) in('super_admin','admin')) with check(public.role_in_business(business_id) in('super_admin','admin'));
+create policy "business_members self or admin read" on public.business_members for select to authenticated using(user_id=auth.uid() or public.role_in_business(business_id) in('super_admin','admin'));
+create policy "business_members admin manage" on public.business_members for all to authenticated using(public.role_in_business(business_id) in('super_admin','admin')) with check(public.role_in_business(business_id) in('super_admin','admin'));
 
- create policy "channels read" on public.channels for select to authenticated using(public.is_approved_in_business(business_id));
- create policy "channels manage" on public.channels for all to authenticated using(public.role_in_business(business_id) in('super_admin','admin','manager')) with check(public.role_in_business(business_id) in('super_admin','admin','manager'));
+create policy "channels read" on public.channels for select to authenticated using(public.is_approved_in_business(business_id));
+create policy "channels manage" on public.channels for all to authenticated using(public.role_in_business(business_id) in('super_admin','admin','manager')) with check(public.role_in_business(business_id) in('super_admin','admin','manager'));
 
- create policy "members read" on public.members for select to authenticated using(public.is_approved_in_business(business_id));
- create policy "members manage" on public.members for all to authenticated using(public.role_in_business(business_id) in('super_admin','admin','manager')) with check(public.role_in_business(business_id) in('super_admin','admin','manager'));
+create policy "members read" on public.members for select to authenticated using(public.is_approved_in_business(business_id));
+create policy "members manage" on public.members for all to authenticated using(public.role_in_business(business_id) in('super_admin','admin','manager')) with check(public.role_in_business(business_id) in('super_admin','admin','manager'));
 
- create policy "agents read" on public.agents for select to authenticated using(public.is_approved_in_business(business_id));
- create policy "agents manage" on public.agents for all to authenticated using(public.role_in_business(business_id) in('super_admin','admin','manager')) with check(public.role_in_business(business_id) in('super_admin','admin','manager'));
+create policy "agents read" on public.agents for select to authenticated using(public.is_approved_in_business(business_id));
+create policy "agents manage" on public.agents for all to authenticated using(public.role_in_business(business_id) in('super_admin','admin','manager')) with check(public.role_in_business(business_id) in('super_admin','admin','manager'));
 
- create policy "transactions read" on public.transactions for select to authenticated using(public.is_approved_in_business(business_id));
- create policy "transactions insert" on public.transactions for insert to authenticated with check(public.role_in_business(business_id) in('super_admin','admin','manager','member','agent'));
- create policy "transactions update" on public.transactions for update to authenticated using(public.role_in_business(business_id) in('super_admin','admin','manager')) with check(public.role_in_business(business_id) in('super_admin','admin','manager'));
- create policy "transactions delete" on public.transactions for delete to authenticated using(public.role_in_business(business_id) in('super_admin','admin','manager'));
+create policy "transactions read" on public.transactions for select to authenticated using(public.is_approved_in_business(business_id));
+create policy "transactions insert" on public.transactions for insert to authenticated with check(public.role_in_business(business_id) in('super_admin','admin','manager','member','agent'));
+create policy "transactions update" on public.transactions for update to authenticated using(public.role_in_business(business_id) in('super_admin','admin','manager')) with check(public.role_in_business(business_id) in('super_admin','admin','manager'));
+create policy "transactions delete" on public.transactions for delete to authenticated using(public.role_in_business(business_id) in('super_admin','admin','manager'));
 
- create policy "openings read" on public.opening_balances for select to authenticated using(public.is_approved_in_business(business_id));
- create policy "openings manage" on public.opening_balances for all to authenticated using(public.role_in_business(business_id) in('super_admin','admin','manager')) with check(public.role_in_business(business_id) in('super_admin','admin','manager'));
+create policy "openings read" on public.opening_balances for select to authenticated using(public.is_approved_in_business(business_id));
+create policy "openings manage" on public.opening_balances for all to authenticated using(public.role_in_business(business_id) in('super_admin','admin','manager')) with check(public.role_in_business(business_id) in('super_admin','admin','manager'));
 
- create policy "closings read" on public.daily_closings for select to authenticated using(public.is_approved_in_business(business_id));
- create policy "closings manage" on public.daily_closings for all to authenticated using(public.role_in_business(business_id) in('super_admin','admin','manager')) with check(public.role_in_business(business_id) in('super_admin','admin','manager'));
+create policy "closings read" on public.daily_closings for select to authenticated using(public.is_approved_in_business(business_id));
+create policy "closings manage" on public.daily_closings for all to authenticated using(public.role_in_business(business_id) in('super_admin','admin','manager')) with check(public.role_in_business(business_id) in('super_admin','admin','manager'));
 
- create policy "permissions read" on public.user_permissions for select to authenticated using(user_id=auth.uid());
- create policy "permissions manage" on public.user_permissions for all to authenticated using(user_id=auth.uid()) with check(user_id=auth.uid());
+create policy "permissions read" on public.user_permissions for select to authenticated using(user_id=auth.uid());
+create policy "permissions manage" on public.user_permissions for all to authenticated using(user_id=auth.uid()) with check(user_id=auth.uid());
 
- create policy "audit read" on public.audit_logs for select to authenticated using(business_id is not null and public.role_in_business(business_id) in('super_admin','admin','manager'));
- create policy "audit insert" on public.audit_logs for insert to authenticated with check(user_id=auth.uid());
-exception when duplicate_object then null; end $$;
+create policy "audit read" on public.audit_logs for select to authenticated using(business_id is not null and public.role_in_business(business_id) in('super_admin','admin','manager'));
+create policy "audit insert" on public.audit_logs for insert to authenticated with check(user_id=auth.uid());
 
 create or replace function public.handle_new_user() returns trigger language plpgsql security definer set search_path=public as $$
 begin
