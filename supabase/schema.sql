@@ -1,14 +1,4 @@
 -- ISF Business Ledger V5 schema (fresh install)
--- Adds on top of V4:
---  - Multi-business support: one account can own/join several businesses,
---    each with its own members, agents, transactions, channels and its own
---    per-business roles (a user can be super_admin in Business A and a
---    plain agent, or not a member at all, in Business B).
---  - Receipt/bill photo upload on transactions (Supabase Storage).
---  - Per-business currency.
--- Permission model changed: roles now live in business_members (per business)
--- instead of profiles.role (which is no longer used for access control).
-
 create extension if not exists pgcrypto;
 
 create table if not exists public.profiles(
@@ -120,7 +110,6 @@ end; $$;
 drop trigger if exists on_auth_user_created on auth.users;
 create trigger on_auth_user_created after insert on auth.users for each row execute procedure public.handle_new_user();
 
--- Creating a business automatically makes its creator that business's super_admin.
 create or replace function public.handle_new_business() returns trigger language plpgsql security definer set search_path=public as $$
 begin
  insert into public.business_members(business_id,user_id,role) values(new.id,new.created_by,'super_admin');
@@ -130,8 +119,6 @@ end; $$;
 drop trigger if exists on_business_created on public.businesses;
 create trigger on_business_created after insert on public.businesses for each row execute procedure public.handle_new_business();
 
--- Storage bucket for receipt / bill photos. Files are stored under
--- "<business_id>/<random>.<ext>" so upload access can be scoped per business.
 insert into storage.buckets (id,name,public) values ('receipts','receipts',true) on conflict (id) do nothing;
 do $$ begin
  create policy "receipts read" on storage.objects for select to public using(bucket_id='receipts');
@@ -139,11 +126,4 @@ do $$ begin
  create policy "receipts delete approved" on storage.objects for delete to authenticated using(bucket_id='receipts' and public.is_approved_in_business(((storage.foldername(name))[1])::uuid));
 exception when duplicate_object then null; end $$;
 
--- Every user starts with zero businesses. The first thing they do after
--- signing in is either create a business (they become its super_admin) or
--- be added to an existing one by that business's admin (Users tab, by email).
-
--- Force PostgREST to pick up the tables/policies above immediately instead of
--- waiting for its own periodic schema-cache refresh (avoids a transient
--- "Could not find the table ... in the schema cache" error right after setup).
 NOTIFY pgrst, 'reload schema';
