@@ -2,86 +2,62 @@
 
 Mobile-friendly React + Vite + Supabase ledger for distributor/member/agent daily settlement.
 
+## What's new since the last V5 build
+- **Receipt photos are now cleaned up automatically before upload.** Sideways phone-camera photos are auto-rotated (EXIF orientation is read and corrected) and the image is resized/re-compressed to a small JPEG (max 1600px, quality 0.8) before it's sent to Supabase Storage. Faster uploads, much less storage used, no more sideways receipts.
+- **Download Backup button (Settings → Backup).** One click bundles everything for the current business — transactions, members, agents, opening balances, daily closings, channels, team list, audit log — into one JSON file and downloads it to the device. This is a manual export, not an automatic cloud sync: save the downloaded file to Google Drive, email it to yourself, etc.
+- **Weekly backup reminder (Settings → Backup).** Pick a day of the week and a time; while the app is open in a browser tab on that device, a browser notification will remind you to download and store a backup. Same client-side-only limitation as the existing Daily Closing Reminder — see "Explicitly not included" below.
+
 ## What's new in V5 (over V4)
 
-**Dark mode:**
-- A sun/moon toggle button next to the logout button switches between light and dark themes instantly.
-- On first visit (no saved preference), the app follows the device/browser's system-level light/dark setting automatically.
-- The choice is remembered in the browser (`localStorage`) so it persists across visits and devices' status-bar color on mobile updates to match.
-- Every screen — including the login and pending-approval screens, cards, tables, forms, and badges — has been converted to theme-aware colors instead of hardcoded ones, so there is no leftover white flash anywhere in the app.
-
-**Mobile UI improvements:**
-- Navigation moves to a fixed bottom tab bar (with icons) on phone-sized screens, matching common mobile-app navigation patterns, instead of a horizontally-scrolling strip at the top.
-- Content area gets extra bottom padding on mobile so the bottom nav never covers the last row of a table or the last field of a form.
-- Bottom nav respects the iPhone home-indicator safe area (`env(safe-area-inset-bottom)`).
-- Buttons and nav targets are sized closer to the 44px touch-target guideline for easier tapping.
-- The top bar's email/logout area, which previously wasn't using the intended CSS styling, now correctly collapses the email text on narrow screens so the Logout and theme buttons stay reachable.
-
-No database changes in this update — `supabase/schema.sql` and `supabase/migration_v3_to_v4.sql` from V4 still apply as-is; there is nothing new to run in Supabase for V5.
-
-## What's new in V4 (over V3)
-
-**Security fix (the important one):**
-- V3 let *anyone* who clicked "Continue with Google" automatically get a profile with role `agent`, which could read and write all business data — because several database read-policies checked only "is this person signed in", not "is this person approved". This is fixed.
-- New sign-ins now default to role **`pending`**, which cannot read or write any data.
-- The very first person to ever sign in becomes `super_admin` automatically — no more manual SQL needed to bootstrap the first admin.
-- Every table's read policy now requires an **approved** role, not just an authenticated session.
-- Fixed a bug in `user_permissions`' RLS policy that checked the wrong column (`id` instead of `user_id`), which meant users could never read their own permission rows.
-
-**New features:**
-- **Users tab** (Super Admin / Admin) — approve pending sign-ups and change anyone's role directly from the app. No more manual SQL to promote/demote a user.
-- **Channels tab** (in Settings, Super Admin/Admin/Manager) — payment channels (Cash, bKash, Nagad, Rocket, Upay, Bank, …) are now stored in the database and managed from the UI. Add new ones (e.g. Tap, DBBL Nexus) or deactivate old ones without touching code.
-- **Audit Log tab** (Super Admin/Admin/Manager) — the app was already writing an audit trail, but there was no screen to see it. There's now a table view of the last 300 actions with who/what/when.
-- **Active/Inactive people** — the `active` flag on members/agents existed in the schema but nothing in the UI used it. You can now deactivate a member/agent from the People tab; deactivated people drop out of the transaction-entry dropdown but stay in historical reports.
-- **Date-range reports** — the Reports tab filtered by a single exact date; it now supports a From/To range.
-- **Dashboard channel snapshot** — quick per-channel opening/closing view on the dashboard, not just inside Daily Closing.
-- **Pending-approval screen** — a new sign-in now sees a clear "waiting for approval" screen instead of a blank/broken dashboard.
-- **Daily closing reminder** — an optional browser notification reminder (see limitation below).
-- Role-aware navigation — Users/Audit/Channels management only show up for roles that can actually use them.
-
-**Explicitly NOT done (flagged, not silently skipped):**
-- **Real SMS/email notifications.** The reminder feature only fires a browser notification while the app tab is open on your device — it is not a push notification and cannot text/email anyone. Real alerts need a backend (e.g. a Supabase Edge Function) plus a paid SMS/email provider (Twilio, a local BD SMS gateway, Resend, etc.) — that requires your own account/API keys, so it isn't something that can be wired up without you choosing and paying for a provider.
-- **Multi-business / multi-tenant support.** The app still stores one business's data per Supabase project. Properly separating multiple businesses needs a `business_id` on every table plus new RLS scoping — a bigger structural change, not a drop-in update. If you need this, it's worth doing as its own project rather than bolted onto V4.
+- **Multi-business support.** One Google account can now own or join several businesses. Each business has its own members, agents, transactions, channels, closings and audit log — fully separate from every other business. A person's role (Super Admin/Admin/Manager/Member/Agent) is now set **per business**, so the same person could be a Super Admin in one business and just an Agent (or not a member at all) in another. A dropdown in the top bar switches between businesses you belong to.
+- **Receipt / bill photo upload.** Every transaction can have a photo attached (stored in Supabase Storage). Shows as a 📎 link in Reports.
+- **Per-business currency.** Each business picks its own currency (BDT, USD, INR, EUR, GBP, PKR, NPR, MYR, AED, SAR); all amounts throughout the app use that business's symbol.
+- **Adding teammates changed.** The old "Users" tab (global, one role per person) is now scoped to whichever business you're currently viewing, and works by email: type a teammate's Gmail address to add them to *this* business (they must have signed in with Google at least once already, even if they've never used this business before). New additions start as `pending` in that business until approved.
+- If you have zero businesses, you're prompted to create one (you become its Super Admin automatically). If your only business membership is still `pending`, you see a waiting screen with the option to switch to another approved business or create a new one.
 
 ## Upgrading an existing (already-deployed) project
-1. Open Supabase → SQL Editor and run `supabase/migration_v3_to_v4.sql`. It's additive/idempotent — it does **not** delete data and does **not** change any existing user's current role.
-2. Deploy the updated `src/main.jsx` / `src/styles.css` (this code) to Vercel.
-3. Log in as your existing super_admin and open the new **Users** tab — that's where you'll approve any new teammates going forward.
+Run the migrations **in order** in Supabase → SQL Editor:
+1. `supabase/migration_v3_to_v4.sql` — skip if you already ran this before.
+2. `supabase/migration_v4_to_v5.sql` — turns your current single-business data into "My Business" inside the new multi-business model. **Nothing is deleted**, and everyone's current role carries over unchanged, now scoped to "My Business". You can rename it and set its currency afterward from Settings.
+
+Then deploy the updated `src/main.jsx` / `src/styles.css` to Vercel.
 
 ## Starting a brand-new project
-1. Create a Supabase project.
-2. Run `supabase/schema.sql` in the Supabase SQL Editor.
-3. Enable the Google provider under Supabase Authentication.
-4. Copy `.env.example` to `.env` and set `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`.
-5. `npm install`
-6. `npm run dev`
-7. Deploy to Vercel.
-8. The first person to sign in with Google automatically becomes Super Admin.
+1. Create a Supabase project, run `supabase/schema.sql` in the SQL Editor.
+2. Enable the Google provider under Supabase Authentication.
+3. Copy `.env.example` to `.env`, set `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`.
+4. `npm install && npm run dev`, then deploy to Vercel.
+5. On first login you'll be asked to create your first business — you become its Super Admin.
 
 ## Formula
 Net Result = Collection - Fund Given - Expense
 Channel Closing = Opening + Collection - Fund Given - Expense
 
 ## Core features
-- Google login with an approval workflow (Pending → assigned role)
-- Dashboard and daily settlement
+- Google login with a per-business approval workflow (Pending → assigned role)
+- Multiple businesses per account, each fully data-isolated, each with its own currency
+- Dashboard and daily settlement, per business
 - Agent/member individual ledger with date selection
-- Fund Given / Collection / Expense transactions
-- Manageable payment channels
+- Fund Given / Collection / Expense transactions, with optional receipt photo
+- Manageable payment channels, per business
 - Daily closing and Net Result
 - Transaction search/filter with date range
 - Edit and delete transactions (role controlled)
-- Audit log with a viewer UI
+- Audit log with a viewer UI, per business
 - PDF + Excel reports
 - Native PDF file share when mobile browser supports it
 - WhatsApp and Telegram share links for report text
-- Role model: Super Admin, Admin, Manager, Member, Agent, Pending
-- Supabase Row Level Security policies, gated on approval status
+- Role model per business: Super Admin, Admin, Manager, Member, Agent, Pending
 
-## Important security notes
-- Do not put a Supabase service-role key in the browser — the app only ever uses the anon key, which is safe by design because RLS enforces access.
-- A real production multi-business deployment should add an organization/business_id to every business table and enforce tenant isolation (see "Explicitly NOT done" above).
-- Approve new users promptly and review roles periodically in the Users tab — anyone left in `pending` sees nothing, which is the safe default.
+## Security notes
+- The app only ever uses the Supabase anon key in the browser — never put a service-role key in client code. Access control is enforced by Postgres Row Level Security (RLS), not by the app's UI, so hiding a tab is a UX nicety, not the actual security boundary.
+- Every business-data table carries a `business_id`, and every RLS policy checks the signed-in user's role **in that specific business** before allowing read or write. A user approved in Business A gets nothing in Business B unless separately added there.
+- Receipt photos are stored in a public Storage bucket (so links work simply); anyone with the exact file URL (a random UUID) could view a receipt image, but URLs aren't discoverable or listable. Uploads/deletes are restricted to users approved in the business that owns that folder.
+- Approve new teammates promptly per business and review roles periodically in each business's Users tab.
+
+## Explicitly not included
+- **Real SMS/email notifications.** The Settings reminders (daily closing and weekly backup) only fire a browser notification while the app tab is open on your device. Real push/SMS/email alerts need a backend (e.g. a Supabase Edge Function) plus a paid provider (Twilio, a local BD SMS gateway, Resend, etc.) — that requires your own account and API keys.
+- **True automatic cloud backup.** The Download Backup button is one click, not zero — it saves a JSON file to the device, and you still choose where to store it (Google Drive, email, etc.). A fully automatic backup to Google Drive/GitHub would need server-side credentials (a Google Cloud OAuth client or similar) that aren't available in this environment.
 
 ## Sharing
 WhatsApp/Telegram direct links share text. On supported mobile browsers, **Share PDF** can open the native share sheet and include the generated PDF file. Direct `wa.me`/`t.me/share` URLs cannot attach a local PDF file by themselves.
