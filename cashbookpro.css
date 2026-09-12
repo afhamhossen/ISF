@@ -1,0 +1,145 @@
+/* CashBook Pro — a phone-app-style module rendered inside the web app.
+   Everything is scoped under .cbp-shell so it never bleeds into the rest
+   of ISF Suite's desktop styles. */
+
+.cbp-shell{min-height:100vh;background:#f8fafc;display:flex;justify-content:center}
+.cbp-app{width:100%;max-width:480px;background:#fff;min-height:100vh;display:flex;flex-direction:column;position:relative;box-shadow:0 0 0 1px #e2e8f0}
+.cbp-app[data-theme="dark"]{background:#111318;color:#e6e8ee}
+.cbp-app[data-theme="dark"] .cbp-card{background:#1a1d24;border-color:#2a2e37}
+.cbp-app[data-theme="dark"] .cbp-topbar{background:#111318;border-color:#2a2e37}
+.cbp-app[data-theme="dark"] .cbp-bottomnav{background:#111318;border-color:#2a2e37}
+.cbp-app[data-theme="dark"] .cbp-input,.cbp-app[data-theme="dark"] .cbp-select{background:#1a1d24;border-color:#2a2e37;color:#e6e8ee}
+.cbp-app[data-theme="dark"] .cbp-listitem{border-color:#2a2e37}
+
+.cbp-topbar{display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid #e2e8f0;position:sticky;top:0;background:#fff;z-index:4}
+.cbp-back{background:none;border:0;font-size:20px;cursor:pointer;color:inherit;line-height:1;padding:4px}
+.cbp-topbar-title{flex:1;min-width:0}
+.cbp-topbar-title h2{margin:0;font-size:18px;line-height:1.25}
+.cbp-topbar-title p{margin:2px 0 0;font-size:12.5px;color:#94a3b8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cbp-icon-btn{background:none;border:0;cursor:pointer;color:#5b5fef;font-size:19px;padding:4px;display:flex;align-items:center}
+.cbp-topbar-actions{display:flex;align-items:center;gap:14px}
+
+.cbp-body{flex:1;overflow-y:auto;padding-bottom:96px}
+.cbp-pad{padding:14px 16px}
+
+.cbp-card{background:#fff;border:1px solid #eef0f4;border-radius:14px;box-shadow:0 1px 3px rgba(15,23,42,.06)}
+.cbp-summary{margin:14px 16px;border-radius:14px;overflow:hidden}
+.cbp-summary-row{display:flex;justify-content:space-between;align-items:center;padding:16px 18px;font-size:17px;font-weight:700;border-bottom:1px solid #f1f3f6}
+.cbp-summary .cbp-sub{display:flex;justify-content:space-between;padding:12px 18px;font-size:15px;border-bottom:1px solid #f1f3f6}
+.cbp-summary .cbp-sub:last-of-type{border-bottom:0}
+.cbp-in{color:#16a34a;font-weight:700}
+.cbp-out{color:#dc2626;font-weight:700}
+.cbp-view-reports{text-align:center;padding:14px;color:#5b5fef;font-weight:700;cursor:pointer;font-size:15px}
+
+.cbp-filterbar{display:flex;gap:8px;overflow-x:auto;padding:10px 16px;scrollbar-width:none}
+.cbp-filterbar::-webkit-scrollbar{display:none}
+.cbp-fchip{flex:none;display:flex;align-items:center;gap:6px;border:1px solid #e2e8f0;background:#fff;border-radius:999px;padding:9px 14px;font-size:13.5px;font-weight:600;color:#334155;cursor:pointer;white-space:nowrap}
+.cbp-fchip.active{background:#eef0ff;border-color:#5b5fef;color:#4338ca}
+.cbp-fchip .cbp-badge{background:#dc2626;color:#fff;border-radius:999px;font-size:10.5px;min-width:16px;height:16px;display:inline-flex;align-items:center;justify-content:center;padding:0 4px}
+
+.cbp-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 24px 20px;text-align:center;color:#0f172a;font-size:20px;font-weight:700}
+.cbp-empty .cbp-arrow{margin-top:14px;font-size:22px;color:#5b5fef}
+
+.cbp-daylabel{font-size:12.5px;font-weight:700;color:#94a3b8;padding:14px 16px 4px;text-transform:uppercase}
+.cbp-entry{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid #f1f3f6;cursor:pointer}
+.cbp-entry:hover{background:#f8fafc}
+.cbp-entry-left b{display:block;font-size:14.5px}
+.cbp-entry-left span{font-size:12.5px;color:#94a3b8}
+.cbp-entry-amt{font-weight:700;font-size:15px}
+
+.cbp-actionbar{position:fixed;left:50%;bottom:0;transform:translateX(-50%);width:100%;max-width:480px;display:flex;border-top:1px solid #e2e8f0;background:#fff;z-index:6}
+.cbp-app[data-theme="dark"] .cbp-actionbar{background:#111318;border-color:#2a2e37}
+.cbp-btn-in,.cbp-btn-out{flex:1;border:0;padding:17px 0;font-size:16px;font-weight:800;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
+.cbp-btn-in{background:#16a34a}
+.cbp-btn-out{background:#dc2626}
+.cbp-record-labels{display:flex;max-width:480px;margin:0 auto;padding:0 16px;justify-content:space-between;font-size:14px;font-weight:700}
+
+.cbp-bottomnav{position:sticky;bottom:0;display:flex;border-top:1px solid #e2e8f0;background:#fff}
+.cbp-navbtn{flex:1;border:0;background:none;padding:10px 0 8px;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:12px;color:#94a3b8;cursor:pointer}
+.cbp-navbtn.active{color:#5b5fef;font-weight:700}
+.cbp-navbtn .cbp-navicon{font-size:19px}
+
+.cbp-booklist-row{display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid #f1f3f6;cursor:pointer}
+.cbp-book-icon{width:40px;height:40px;border-radius:50%;background:#eef0ff;color:#5b5fef;display:flex;align-items:center;justify-content:center;font-size:18px;flex:none}
+.cbp-book-main{flex:1;min-width:0}
+.cbp-book-main b{display:block;font-size:15.5px}
+.cbp-book-main span{font-size:12.5px;color:#94a3b8}
+.cbp-book-bal{font-weight:700;color:#16a34a}
+.cbp-kebab{background:none;border:0;font-size:19px;color:#64748b;cursor:pointer;padding:4px 6px}
+
+.cbp-fab{position:fixed;right:calc(50% - 232px);bottom:80px;width:56px;height:56px;border-radius:50%;background:#5b5fef;color:#fff;font-size:26px;border:0;box-shadow:0 6px 16px rgba(91,95,239,.4);cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:5}
+@media(max-width:560px){.cbp-fab{right:20px}.cbp-actionbar,.cbp-app{max-width:100%}}
+
+.cbp-addnew-card{margin:14px 16px;border:1px dashed #c7cbf5;border-radius:14px;padding:16px;background:#f9f9ff}
+.cbp-addnew-card b{font-size:15.5px}
+.cbp-addnew-card p{margin:4px 0 12px;font-size:13px;color:#64748b}
+.cbp-chips{display:flex;flex-wrap:wrap;gap:8px}
+.cbp-chip-suggest{border:1px solid #c7cbf5;background:#fff;color:#5b5fef;border-radius:999px;padding:9px 14px;font-size:13.5px;font-weight:700;cursor:pointer}
+.cbp-chip-suggest.active{background:#5b5fef;color:#fff}
+
+.cbp-field{margin:0 16px 18px}
+.cbp-field label{display:block;font-size:12.5px;font-weight:700;color:#5b5fef;margin-bottom:6px}
+.cbp-input,.cbp-select,textarea.cbp-input{width:100%;border:1.5px solid #e2e8f0;border-radius:10px;padding:13px;font-size:15px;font:inherit;background:#fff;color:inherit}
+.cbp-input:focus,.cbp-select:focus{outline:none;border-color:#5b5fef}
+
+.cbp-access-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:0 16px 18px}
+.cbp-access-opt{border:1.5px solid #e2e8f0;border-radius:12px;padding:18px 10px;text-align:center;cursor:pointer;font-weight:700;font-size:14px}
+.cbp-access-opt.active{border-color:#5b5fef;background:#f5f5ff;color:#4338ca}
+.cbp-access-opt .cbp-access-icon{font-size:22px;display:block;margin-bottom:8px}
+
+.cbp-notice{margin:0 16px 16px;background:#eef0ff;color:#4338ca;border-radius:10px;padding:12px 14px;font-size:13.5px;display:flex;gap:10px;align-items:flex-start}
+
+.cbp-primary-btn{display:block;width:calc(100% - 32px);margin:16px;border:0;background:#5b5fef;color:#fff;border-radius:12px;padding:15px;font-size:16px;font-weight:800;cursor:pointer}
+.cbp-primary-btn:disabled{background:#c7cbf5;cursor:not-allowed}
+.cbp-secondary-btn{display:inline-flex;align-items:center;gap:6px;background:none;border:0;color:#5b5fef;font-weight:700;font-size:14px;cursor:pointer;padding:8px 0}
+
+.cbp-checkrow{display:flex;align-items:center;gap:12px;background:#eef0ff;border-radius:10px;padding:14px;margin:0 16px 10px;font-weight:700;font-size:15px;cursor:pointer}
+.cbp-checkrow input{width:19px;height:19px}
+
+.cbp-section-title{padding:12px 16px 4px;font-size:12.5px;font-weight:700;color:#94a3b8;text-transform:uppercase}
+.cbp-settingsrow{display:flex;align-items:center;gap:14px;padding:15px 16px;border-bottom:1px solid #f1f3f6;cursor:pointer}
+.cbp-settingsrow .cbp-si{width:34px;height:34px;border-radius:9px;background:#eef0ff;color:#5b5fef;display:flex;align-items:center;justify-content:center;font-size:16px;flex:none}
+.cbp-settingsrow-main{flex:1}
+.cbp-settingsrow-main b{display:block;font-size:15px}
+.cbp-settingsrow-main span{font-size:12.5px;color:#94a3b8}
+.cbp-switch{position:relative;width:42px;height:24px;flex:none}
+.cbp-switch input{opacity:0;width:0;height:0}
+.cbp-switch .cbp-slider{position:absolute;inset:0;background:#cbd5e1;border-radius:999px;cursor:pointer;transition:.15s}
+.cbp-switch .cbp-slider:before{content:"";position:absolute;width:18px;height:18px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.15s}
+.cbp-switch input:checked+.cbp-slider{background:#5b5fef}
+.cbp-switch input:checked+.cbp-slider:before{transform:translateX(18px)}
+
+.cbp-tabs{display:flex;border-bottom:1px solid #e2e8f0;padding:0 16px}
+.cbp-tab{flex:1;text-align:center;padding:12px 4px;font-size:14px;font-weight:700;color:#94a3b8;cursor:pointer;border-bottom:2px solid transparent}
+.cbp-tab.active{color:#5b5fef;border-color:#5b5fef}
+
+.cbp-overlay{position:fixed;inset:0;background:rgba(15,23,42,.5);display:flex;align-items:flex-end;justify-content:center;z-index:20}
+.cbp-sheet{width:100%;max-width:480px;background:#fff;border-radius:18px 18px 0 0;max-height:88vh;overflow-y:auto;padding-bottom:20px}
+.cbp-app[data-theme="dark"] .cbp-sheet{background:#1a1d24;color:#e6e8ee}
+.cbp-sheet-head{display:flex;align-items:center;gap:12px;padding:16px;border-bottom:1px solid #f1f3f6;position:sticky;top:0;background:inherit}
+.cbp-sheet-head h3{margin:0;font-size:17px;flex:1}
+.cbp-sheet-close{background:none;border:0;font-size:20px;cursor:pointer;color:inherit}
+
+.cbp-menu{position:absolute;top:56px;right:12px;background:#fff;border-radius:14px;box-shadow:0 10px 30px rgba(15,23,42,.18);min-width:220px;overflow:hidden;z-index:15}
+.cbp-app[data-theme="dark"] .cbp-menu{background:#1a1d24}
+.cbp-menu-item{display:flex;align-items:center;gap:12px;padding:14px 16px;font-size:15px;cursor:pointer;color:inherit}
+.cbp-menu-item:hover{background:#f8fafc}
+.cbp-menu-item.danger{color:#dc2626}
+
+.cbp-roletabs{display:flex;gap:10px;margin:16px;flex-wrap:wrap}
+.cbp-roletab{flex:1;text-align:center;padding:11px 8px;border-radius:999px;border:1.5px solid #e2e8f0;font-weight:700;font-size:13.5px;cursor:pointer;white-space:nowrap}
+.cbp-roletab.active-primary{background:#dcfce7;border-color:#16a34a;color:#166534}
+.cbp-roletab.active-admin{background:#ffedd5;border-color:#ea580c;color:#9a3412}
+.cbp-roletab.active-employee{background:#dbeafe;border-color:#2563eb;color:#1d4ed8}
+
+.cbp-permbox{margin:0 16px;border:1px solid #eef0f4;border-radius:12px;padding:16px}
+.cbp-permbox h4{margin:0 0 10px;font-size:14.5px}
+.cbp-permrow{display:flex;align-items:flex-start;gap:10px;font-size:14px;padding:6px 0}
+.cbp-perm-yes{color:#16a34a}
+.cbp-perm-no{color:#dc2626}
+
+.cbp-faq-chips{display:flex;gap:8px;overflow-x:auto;padding:10px 16px}
+.cbp-faqrow{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid #f1f3f6;font-size:14.5px;cursor:pointer}
+.cbp-faqrow span{color:#94a3b8}
+
+.cbp-toast{position:fixed;left:50%;bottom:110px;transform:translateX(-50%);background:#0f172a;color:#fff;padding:10px 16px;border-radius:999px;font-size:13px;z-index:30;max-width:90%;text-align:center}

@@ -35,3 +35,12 @@ tr.low-stock{background:#fef2f2}
 .listrow{flex-wrap:wrap;gap:8px}
 .listrow select,.listrow input{border:1px solid #cbd5e1;border-radius:8px;padding:8px;font:inherit}
 svg text{fill:#0f172a}
+
+/* Filters: Date preset chips (Reports + Cash Book entries) */
+.filter-chips{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:16px}
+.chip{border:1px solid #cbd5e1;background:white;color:#334155;border-radius:999px;padding:8px 14px;font-size:13px;font-weight:600;cursor:pointer}
+.chip:hover{border-color:#94a3b8}
+.chip-active{background:#0f172a;color:white;border-color:#0f172a}
+.filter-chips input[type="date"]{border:1px solid #cbd5e1;border-radius:8px;padding:8px;font:inherit}
+.checkbox-row{flex-direction:row!important;align-items:center;gap:10px!important;font-weight:600}
+.checkbox-row input{width:18px;height:18px}

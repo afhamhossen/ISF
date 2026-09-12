@@ -1,4 +1,51 @@
-# ISF Suite V8 (Business Ledger + Cash Book + Personal Expense)
+# ISF Suite V9 (Business Ledger + Cash Book + Personal Expense + CashBook Pro)
+
+## V9: new "CashBook" module
+A fourth tool alongside Business Ledger / Cash Book / Personal Expense, picked from the
+same app chooser after login. It mirrors a Business → Books → Entries structure instead
+of Business Ledger's single running ledger:
+
+- **Books list** — a business can hold many independent books (Day Book, Investments,
+  Project Book, Client Record, or a custom name), each with its own running balance.
+  Rename, duplicate or delete a book from its kebab menu.
+- **Day Book screen** — Net Balance / Opening Balance / Total In / Total Out card, a
+  scrollable date-grouped entry list, and green **Cash In** / red **Cash Out** buttons
+  that open a bottom-sheet entry form (date, amount, category, payment mode, remark).
+- **Filters** — a dedicated full-screen filter (Date presets, Entry Type, Members,
+  Category, Payment Mode) with an "Add opening balance" toggle and Clear all/Apply.
+- **Duplicate Book** — copy a book's Members & Roles / Categories / Payment Modes /
+  Contact settings into a newly named book.
+- **Business Team & Roles** — Primary Admin / Admin / Employee tabs with a permissions
+  and restrictions breakdown, built on top of the existing `business_members` roles
+  (Employee book-level access is stored in the new `cbp_book_members` table).
+- **Business Profile** (Basics / Business Info / Communication tabs) and **App Settings**
+  (Dark Theme, App Lock, Group Book Notifications, Amount Field Calculator) screens.
+- **Excel Report** export of a book's currently filtered entries, and a **Book Activity**
+  log (who did what, when) per book.
+
+Run `supabase/migration_v8_to_v9.sql` after `migration_v7_to_v8.sql` to add the new
+`cbp_*` tables — it only adds tables/columns, so it's safe on an existing V8 database and
+doesn't touch Business Ledger, Cash Book or Personal Expense data.
+
+**Scope note:** this first pass covers the core loop (create/duplicate/delete books, log
+and filter entries, view/change team roles, edit the business profile, export Excel,
+toggle app settings). Inviting a new teammate by email, per-book Employee role
+assignment from the UI, PDF-styled reports, and the Help & FAQ content are stubbed with
+placeholder text ("coming soon") rather than fully wired up — flag any of those as your
+next priority and they're straightforward to build on this same foundation.
+
+## Latest additions (this update)
+- **Quick filters.** Business Ledger's Reports tab and Cash Book's Cash Entries tab now
+  have a chip-style date filter (All Time / Today / Yesterday / This Month / Last Month /
+  Date Range) plus dropdowns for Entry Type, Members (Business Ledger) or Category
+  (Cash Book), and Payment Mode/Channel — with an active-filter count badge and a
+  "Clear all" button. Cash Book's stats (Total In/Out/Balance) update to match the
+  filtered entries; nothing here changes what PDF/Excel/Backup export.
+- **Duplicate Business.** In Business Ledger → Settings → "Duplicate Business", create a
+  new business pre-filled with the current one's Payment Channels and/or Members & Roles
+  (agents/members list only — transactions, closings and audit history are never copied).
+  You automatically become its Super Admin and are switched into it, same as creating a
+  business normally.
 
 ## What's new in V8
 Six features added to **both Business Ledger and Cash Book** (Personal Expense is
