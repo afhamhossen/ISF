@@ -1,7 +1,7 @@
 {
-  "name": "isf-business-ledger-v5",
+  "name": "isf-multibook-ledger",
   "private": true,
-  "version": "5.0.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -10,8 +10,8 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.57.0",
-    "jspdf": "^3.0.2",
-    "jspdf-autotable": "^5.0.2",
+    "jspdf": "^3.0.3",
+    "lucide-react": "^0.468.0",
     "xlsx": "^0.18.5",
     "react": "^19.1.1",
     "react-dom": "^19.1.1"
